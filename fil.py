@@ -1,3 +1,24 @@
+"""
+🏺 `fil`: Read or write JSON, TOML, Yaml and JSON Lines files 🏺
+
+## Example 1: read a file
+
+    # Reading a JSON Line file returns an interator:
+    for record in fil.read('file.jsonl'):
+        ...
+
+## Example 2: write a file
+
+    fil.write(d3, 'file.json')
+    fil.write(d2, 'file.toml')
+    fil.write(d1, 'file.yaml')
+
+    # Write an iterator to a JSON Line file
+    dicts = ({'key': i} for i in range(10))
+    fil.write(dicts, 'file.jsonl')
+
+"""
+
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Union
 import json
@@ -13,6 +34,13 @@ FilePath = Union[Path, str]
 
 
 def read(path: FilePath) -> FileData:
+    """
+    Returns:
+       JSON, or an iterator of JSON records, if the file is JSON Lines
+
+    Args:
+      path: the string or path to the file to read
+    """
     p = Path(path)
     return _get_class(p).read(p)
 
@@ -24,6 +52,20 @@ def write(
     use_safer: Optional[bool] = None,
     **kwargs: Dict,
 ) -> None:
+    """
+    Args:
+      data: JSON, or an iterator of JSON records, if the file is JSON Lines
+
+      path: the string or path to the file to read
+
+      use_safer: whether to use the safer module to avoid writing incomplete
+        files.  The default, `None` means use the default for that sort of file
+        which is True for all files except JSON Line files, where the
+        expectation is that a partial file be written if there is some error
+        during the process.
+
+      kwargs: named arguments passed to the underlying reader or writer
+    """
     p = Path(path)
     return _get_class(p).write(data, p, use_safer=use_safer, **kwargs)
 
