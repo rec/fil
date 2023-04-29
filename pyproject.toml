@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fil"
-version = "0.1.0"
+version = "0.2.0"
 description = "🏺 Read/write JSON, TOML, ... files 🏺"
 authors = ["Tom Ritchford <tom@swirly.com>"]
 license = "MIT"
