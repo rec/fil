@@ -1,6 +1,8 @@
 # 🏺: `fil`: Read/write JSON, TOML, ... files 🏺
 
-::: fil
+::: fil.read
+
+::: fil.write
 
 ## About this project
 
