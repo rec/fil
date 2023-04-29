@@ -1,0 +1,19 @@
+site_name: '🏺: `fil`: Read/write JSON, TOML, ... files 🏺'
+
+theme:
+  name: material
+
+  palette:
+    primary:
+      'cyan'
+
+  font:
+    text:
+      Roboto
+    code:
+      Roboto Mono
+
+extra_css: [extra.css]
+
+plugins:
+    - mkdocstrings
