@@ -29,6 +29,98 @@ def _get_class(p):
         raise ValueError('Do not understand file {p}')
 
 
+class _Base:
+    suffixes = ()
+    use_safer = True
+    module_names = ()
+
+    def __init__(self):
+        for m in self.module_names:
+            try:
+                self._module = __import__(m)
+                return
+            except ImportError:
+                pass
+        self._import_error()
+
+    def _import_error(self):
+        name = self.module_name
+        sfx = ', '.join(self.suffixes)
+        raise ImportError(f'Install module `{name}` is needed for {sfx} files')
+
+    def read(self, p):
+        with p.open() as fp:
+            return self._read(fp)
+
+    def write(self, data, p, *, **kwargs):
+        use_safer = kwargs.pop('use_safer', None)
+        if use_safer is None:
+            use_safer = self.use_safer:
+        fp = safer.open(p) if use_safer else open(p)
+        with fp:
+            self._write(data, fp, **kwargs)
+
+    def _open(self, p, kwargs):
+        use_safer = kwargs.pop('use_safer', None)
+        if use_safer is None:
+            use_safer = self.use_safer:
+        return safer.open(p) if use_safer else open(p)
+
+    @property
+    def _read(self):
+        return self._module.load
+
+    @property
+    def _write(self):
+        return self._module.dump
+
+
+class _Json(_Base):
+    suffixes = '.json',
+    module_names = 'json',
+
+
+class _Toml(_Base):
+    suffixes = '.toml',
+    module_names = 'tomlkit',
+
+    @property
+    def _write(self):
+        try:
+            return super()._write
+        except AttributeError:
+            self._import_error()
+
+
+class _Yaml(_Base):
+    suffixes = '.yaml', '.yml'
+    module_names = 'pyyaml',
+
+    @property
+    def _read(self):
+        return self._module.safe_load
+
+    @property
+    def _write(self):
+        return self._module.safe_dump
+
+
+class _JsonLines:
+    use_safer = False
+    suffixes = '.jl', '.jsonl', '.jsonlines'
+
+    def _read(self, p):
+        for line in fp:
+            yield json.loads(line)
+
+    def _write(self, data, p, *, **kwargs):
+        if kwargs.get('indent') is not None:
+            raise ValueError('indent= not allowed for JSON Lines')
+
+        for d in data:
+            print(json.dumps(d), file=fp)
+
+
 class _Json:
     @staticmethod
     def read(p):
@@ -36,9 +128,9 @@ class _Json:
             return json.load(fp)
 
     @staticmethod
-    def write(data, p):
-        with safer.open(p, 'w') as fp:
-            json.dump(data, fp)
+    def write(data, p, *, use_safer=True, **kwargs):
+        with _open(p, use_safer) as fp:
+            json.dump(data, fp, **kwargs)
 
 
 class _Yaml:
@@ -48,8 +140,8 @@ class _Yaml:
             return _yaml().safe_load(fp)
 
     @staticmethod
-    def write(data, p, **kwargs):
-        with safer.open(p, 'w') as fp:
+    def write(data, p, *, use_safer=True, **kwargs):
+        with _open(p, use_safer) as fp:
             _yaml().safe_dump(data, fp, **kwargs)
 
 
@@ -71,8 +163,9 @@ class _Toml:
         return toml.loads(p.read_text())
 
     @staticmethod
-    def write(data, p, **kwargs):
-        p.write_text(_toml().dumps(data, **kwargs))
+    def write(data, p, *, use_safer=True, **kwargs):
+        with _open(p, use_safer) as fp:
+            _toml().dump(data, fp, **kwargs)
 
 
 def _toml():
@@ -95,18 +188,17 @@ class _JsonLines:
         if kwargs.get('indent') is not None:
             raise ValueError('indent= not allowed for JSON Lines')
 
-        _open = safer.open if use_safer else open
-        with _open(p, 'w') as fp:
+        with _open(p, use_safer) as fp:
             for d in data:
                 print(json.dumps(d), file=fp)
 
 
 SUFFIX_TO_CLASS = {
     '.jl': _JsonLines,
+    '.json': _Json,
     '.jsonl': _JsonLines,
     '.jsonline': _JsonLines,
+    '.toml': _Toml,
     '.yaml': _Yaml,
     '.yml': _Yaml,
-    '.json': _Json,
-    '.toml': _Toml,
 }
