@@ -234,6 +234,18 @@ files = [
 ]
 
 [[package]]
+name = "safer"
+version = "4.5.0"
+description = "🧿 A safer writer for files and streams 🧿"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "safer-4.5.0-py3-none-any.whl", hash = "sha256:fb4c674a2144c4fe1d651c529517086c1e4c2a1b2ca708a0b6b3f6f89ce6caaa"},
+    {file = "safer-4.5.0.tar.gz", hash = "sha256:8c5a81e7c6d4daa6bf2eb5deb8de0f30daa261b1d8e22dcc90349acbf031393e"},
+]
+
+[[package]]
 name = "tdir"
 version = "1.5.0"
 description = "🗃 Create and fill a temporary directory 🗃"
@@ -319,4 +331,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "1e4aaa967ecd885e6663ae1f5f271a0981b82242dc6036137e21566283ec8f8b"
+content-hash = "29866a4e766c1b3da77ef84c93544b4dd1d7fa6be0ddc22c3052831618b33baa"
