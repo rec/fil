@@ -63,7 +63,10 @@ class _Json:
             self._write(data, fp, **kwargs)
 
     def _import_error(self):
-        name = self.module_name
+        name = self.module_names[0]
+        if name == 'yaml':
+            name = 'pyyaml'
+
         sfx = ', '.join(self.suffixes)
         raise ImportError(f'Install module `{name}` is needed for {sfx} files')
 
@@ -86,7 +89,7 @@ class _Toml(_Json):
 
 class _Yaml(_Json):
     suffixes = '.yaml', '.yml'
-    module_names = 'pyyaml',
+    module_names = 'yaml',
 
     @property
     def _read(self):
@@ -101,9 +104,10 @@ class _JsonLines(_Json):
     use_safer = False
     suffixes = '.jl', '.jsonl', '.jsonlines'
 
-    def _read(self, fp):
-        for line in fp:
-            yield json.loads(line)
+    def read(self, p):
+        with open(p) as fp:
+            for line in fp:
+                yield json.loads(line)
 
     def _write(self, data, fp, **kwargs):
         if kwargs.get('indent') is not None:
@@ -113,5 +117,5 @@ class _JsonLines(_Json):
             print(json.dumps(d), file=fp)
 
 
-CLASSES = _Json, _JsonLines, _Toml, _Yaml
+CLASSES = _Json(), _JsonLines(), _Toml(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
