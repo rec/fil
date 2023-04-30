@@ -19,6 +19,7 @@
 
 """
 
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Union
 import json
@@ -52,29 +53,21 @@ def write(
     use_safer: Optional[bool] = None,
     **kwargs: Dict,
 ) -> None:
-    """
-    Args:
-      data: JSON, or an iterator of JSON records, if the file is JSON Lines
+    """Args:
 
-      path: the string or path to the file to read
+    data: JSON, or an iterator of JSON records, if the file is JSON Lines
 
-      use_safer: whether to use the safer module to avoid writing incomplete
-        files.  The default, `None` means use the default for that sort of file
-        which is True for all files except JSON Line files, where the
-        expectation is that a partial file be written if there is some error
-        during the process.
+    path: the string or path to the file to read
 
-      kwargs: named arguments passed to the underlying reader or writer
+    use_safer: whether to use the safer module to avoid writing incomplete
+      files. The default, `None` means to use `safer` on all files *except*
+      for JSON Line files, where you want each line to be immediately written
+      as it appears, and a partial file saved if there is a crash
+
+    kwargs: named arguments passed to the underlying writer
     """
     p = Path(path)
     return _get_class(p).write(data, p, use_safer=use_safer, **kwargs)
-
-
-def _get_class(p):
-    try:
-        return SUFFIX_TO_CLASS[p.suffix]
-    except KeyError:
-        raise ValueError('Do not understand file {p}')
 
 
 class _Json:
@@ -82,20 +75,12 @@ class _Json:
     suffixes = '.json',
     use_safer = True
 
-    def __init__(self):
-        for m in self.module_names:
-            try:
-                self._module = __import__(m)
-                return
-            except ImportError:
-                pass
-        self._import_error()
-
     def read(self, p):
         with open(p) as fp:
             return self._read(fp)
 
-    def write(self, data, p, use_safer=None, **kwargs):
+    def write(self, data, p, *, use_safer=None, **kwargs):
+        self._check_data(data)
         if use_safer or use_safer is None and self.use_safer:
             fp = safer.open(p, 'w')
         else:
@@ -104,40 +89,56 @@ class _Json:
         with fp:
             self._write(data, fp, **kwargs)
 
+    def _check_data(self, data):
+        pass
+
     def _import_error(self):
         name = self.module_names[0]
-        if name == 'yaml':
-            name = 'pyyaml'
+        name = 'pyyaml' if name == 'yaml' else name
 
         sfx = ', '.join(self.suffixes)
-        raise ImportError(f'Install module `{name}` is needed for {sfx} files')
+        raise ImportError(f'Install module `{name}` to use {sfx} files')
 
-    @property
+    @cached_property
+    def _module(self):
+        for m in self.module_names:
+            try:
+                return __import__(m)
+            except ImportError:
+                pass
+        self._import_error()
+
+    @cached_property
     def _read(self):
         return self._module.load
 
-    @property
+    @cached_property
     def _write(self):
         try:
             return self._module.dump
         except AttributeError:
+            # This happens because tomlkit has dump/dumps, but tomllib does not
             self._import_error()
 
 
 class _Toml(_Json):
     suffixes = '.toml',
-    module_names = 'tomlkit',
+    module_names = 'tomlkit', 'tomllib'
+
+    def _check_data(self, data):
+        if not isinstance(data, dict):
+            raise TypeError(f'TOML only writes dicts, not {type(data)}')
 
 
 class _Yaml(_Json):
     suffixes = '.yaml', '.yml'
     module_names = 'yaml',
 
-    @property
+    @cached_property
     def _read(self):
         return self._module.safe_load
 
-    @property
+    @cached_property
     def _write(self):
         return self._module.safe_dump
 
@@ -158,6 +159,21 @@ class _JsonLines(_Json):
         for d in data:
             print(json.dumps(d), file=fp)
 
+    def _check_data(self, d):
+        if not isinstance(d, (dict, str)):
+            try:
+                return iter(d)
+            except TypeError:
+                pass
+        raise TypeError('JSON Line data must be iterable, not dict or str')
+
 
 CLASSES = _Json(), _JsonLines(), _Toml(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
+
+
+def _get_class(p):
+    try:
+        return SUFFIX_TO_CLASS[p.suffix]
+    except KeyError:
+        raise ValueError('Do not understand file {p}')
