@@ -121,13 +121,28 @@ class _Json:
             self._import_error()
 
 
+class _Txt(_Json):
+    suffixes = '.txt',
+    use_safer = False
+
+    def _check_data(self, d):
+        if not isinstance(d, str):
+            raise TypeError('.txt files only accept strings, not {type(data)}')
+
+    def _read(self, p):
+        return p.read()
+
+    def _write(self, data, fp, **kwargs):
+        fp.write(data)
+
+
 class _Toml(_Json):
     suffixes = '.toml',
     module_names = 'tomlkit', 'tomllib'
 
     def _check_data(self, data):
         if not isinstance(data, dict):
-            raise TypeError(f'TOML only writes dicts, not {type(data)}')
+            raise TypeError(f'TOML files only accept dicts, not {type(data)}')
 
 
 class _Yaml(_Json):
@@ -165,10 +180,10 @@ class _JsonLines(_Json):
                 return iter(d)
             except TypeError:
                 pass
-        raise TypeError('JSON Line data must be iterable, not dict or str')
+        raise TypeError('JSON Line data must be iterable and not dict or str')
 
 
-CLASSES = _Json(), _JsonLines(), _Toml(), _Yaml()
+CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
 
 
