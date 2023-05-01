@@ -75,16 +75,15 @@ class _Json:
     suffixes = '.json',
     use_safer = True
 
-    def read(self, p):
+    def read(self, p, open=open):
         with open(p) as fp:
             return self._read(fp)
 
-    def write(self, data, p, *, use_safer=None, **kwargs):
+    def write(self, data, p, *, open=open, use_safer=None, **kwargs):
         self._check_data(data)
+        fp = open(p, 'w')
         if use_safer or use_safer is None and self.use_safer:
             fp = safer.open(p, 'w')
-        else:
-            fp = open(p, 'w')
 
         with fp:
             self._write(data, fp, **kwargs)
@@ -162,7 +161,7 @@ class _JsonLines(_Json):
     use_safer = False
     suffixes = '.jl', '.jsonl', '.jsonlines'
 
-    def read(self, p):
+    def read(self, p, open=open):
         with open(p) as fp:
             for line in fp:
                 yield json.loads(line)
