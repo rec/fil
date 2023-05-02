@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-safer = "*"
+safer = "^4.6.1"
 
 [tool.poetry.group.all.dependencies]
 pyyaml = "*"

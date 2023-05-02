@@ -210,14 +210,14 @@ files = [
 
 [[package]]
 name = "safer"
-version = "4.5.0"
+version = "4.6.1"
 description = "🧿 A safer writer for files and streams 🧿"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "safer-4.5.0-py3-none-any.whl", hash = "sha256:fb4c674a2144c4fe1d651c529517086c1e4c2a1b2ca708a0b6b3f6f89ce6caaa"},
-    {file = "safer-4.5.0.tar.gz", hash = "sha256:8c5a81e7c6d4daa6bf2eb5deb8de0f30daa261b1d8e22dcc90349acbf031393e"},
+    {file = "safer-4.6.1-py3-none-any.whl", hash = "sha256:3990de3144af160cc16e052e8469559d5041732fe96c189f8815943bafe40eff"},
+    {file = "safer-4.6.1.tar.gz", hash = "sha256:fa6f4bff3606668fec6c6e88eb6757dd0b6ac017dbefe090f95e14495e160d56"},
 ]
 
 [[package]]
@@ -278,4 +278,4 @@ dek = ">=1.0.2,<2.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "6cac2cb5f3360e6b977581276b481f9aefc35784f8ff95f6247e6210c7036af7"
+content-hash = "b93c0e352201d0f44a434d78d49cd65d5acab15b63b20158cf1dcd27b2f530f7"
