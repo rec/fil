@@ -16,12 +16,13 @@
     # Write an iterator to a JSON Line file
     dicts = ({'key': i} for i in range(10))
     fil.write(dicts, 'file.jsonl')
-
 """
 
 from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Union
+import bz2
+import gzip
 import json
 import safer
 
@@ -43,7 +44,8 @@ def read(path: FilePath) -> FileData:
       path: the string or path to the file to read
     """
     p = Path(path)
-    return _get_class(p).read(p)
+    cls, open = _get_class(p)
+    return cls.read(p, open=open)
 
 
 def write(
@@ -67,7 +69,8 @@ def write(
     kwargs: named arguments passed to the underlying writer
     """
     p = Path(path)
-    return _get_class(p).write(data, p, use_safer=use_safer, **kwargs)
+    cls, open = _get_class(p)
+    return cls.write(data, p, open=open, use_safer=use_safer, **kwargs)
 
 
 class _Json:
@@ -185,9 +188,22 @@ class _JsonLines(_Json):
 CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
 
+SUFFIX_TO_MODULE = {
+    '.bz': bz2,
+    '.gz': gzip,
+    '.gzip': gzip,
+}
+
 
 def _get_class(p):
     try:
-        return SUFFIX_TO_CLASS[p.suffix]
+        _open = SUFFIX_TO_MODULE[p.suffix].open
+    except KeyError:
+        _open = open
+    else:
+        p = p.with_suffix('')
+
+    try:
+        return SUFFIX_TO_CLASS[p.suffix], _open
     except KeyError:
         raise ValueError('Do not understand file {p}')
