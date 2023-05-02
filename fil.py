@@ -3,20 +3,25 @@
 
 ## Example 1: read a file
 
+    d1 = fil.read('file.json')   # Any Json
+    d2 = fil.read('file.toml')   # A dict
+    d3 = fil.read('file.yaml')   # Any JSON
+    d4 = fil.read('file.txt')    # A string
+
     # Reading a JSON Line file returns an interator:
     for record in fil.read('file.jsonl'):
-        ...
+        print(record)  # A sequence of JSON
 
-## Example 2: write a file
+## Example 2: write to a file
 
-    fil.write(d3, 'file.json')
-    fil.write(d2, 'file.toml')
-    fil.write(d1, 'file.yaml')
+    fil.write(d1, 'file.json')  # d1 can be any JSON
+    fil.write(d2, 'file.toml')  # d2 must be a dict
+    fil.write(d3, 'file.yaml')  # d3 can be any JSON
+    fil.write(d4, 'file.txt')   # d4 most be a str
 
     # Write an iterator to a JSON Line file
     dicts = ({'key': i} for i in range(10))
     fil.write(dicts, 'file.jsonl')
-
 """
 
 from functools import cached_property
@@ -36,6 +41,8 @@ FilePath = Union[Path, str]
 
 def read(path: FilePath) -> FileData:
     """
+    Reads data from a file based on its suffix
+
     Returns:
        JSON, or an iterator of JSON records, if the file is JSON Lines
 
@@ -53,18 +60,20 @@ def write(
     use_safer: Optional[bool] = None,
     **kwargs: Dict,
 ) -> None:
-    """Args:
+    """
+    Writes data to a file with a format based on the file's suffix.
 
-    data: JSON, or an iterator of JSON records, if the file is JSON Lines
+    Args:
+        data: JSON, or an iterator of JSON records, if the file is JSON Lines
 
-    path: the string or path to the file to read
+        path: the string or path to the file to read
 
-    use_safer: whether to use the safer module to avoid writing incomplete
-      files. The default, `None` means to use `safer` on all files *except*
-      for JSON Line files, where you want each line to be immediately written
-      as it appears, and a partial file saved if there is a crash
+        use_safer: whether to use the safer module to avoid writing incomplete
+          files. The default, `None` means to use `safer` on all files *except*
+          for JSON Line files, where you want each line to be immediately written
+          as it appears, and a partial file saved if there is a crash
 
-    kwargs: named arguments passed to the underlying writer
+        kwargs: named arguments passed to the underlying writer
     """
     p = Path(path)
     return _get_class(p).write(data, p, use_safer=use_safer, **kwargs)
