@@ -277,7 +277,7 @@
 <a id="fil.read"></a>
   <div class="doc doc-contents first">
   
-
+      <p><strong>Returns:</strong></p>
   <table>
     <thead>
       <tr>
@@ -322,18 +322,22 @@
       <details class="quote">
         <summary>Source code in <code>fil/fil.py</code></summary>
         <div class="highlight"><table class="highlighttable"><tr>
-<td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
+<td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
-<span class="normal">46</span></pre></div></td>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td>
 <td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileData</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Reads data from a file based on its suffix</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">       JSON, or an iterator of JSON records, if the file is JSON Lines</span>
 
@@ -355,27 +359,69 @@
 <a id="fil.write"></a>
   <div class="doc doc-contents first">
   
-      <p>data: JSON, or an iterator of JSON records, if the file is JSON Lines</p>
-<p>path: the string or path to the file to read</p>
+      <p>Writes data to a file with a format based on the file's suffix.</p>
 
-<details class="use_safer">
-  <summary>whether to use the safer module to avoid writing incomplete</summary>
-  <p>files. The default, <code>None</code> means to use <code>safer</code> on all files <em>except</em>
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>data</code></td>
+          <td>
+                <code><span title="fil.FileData">FileData</span></code>
+          </td>
+          <td><p>JSON, or an iterator of JSON records, if the file is JSON Lines</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>path</code></td>
+          <td>
+                <code><span title="fil.FilePath">FilePath</span></code>
+          </td>
+          <td><p>the string or path to the file to read</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>use_safer</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[bool]</code>
+          </td>
+          <td><p>whether to use the safer module to avoid writing incomplete
+files. The default, <code>None</code> means to use <code>safer</code> on all files <em>except</em>
 for JSON Line files, where you want each line to be immediately written
-as it appears, and a partial file saved if there is a crash</p>
-</details>      <p>kwargs: named arguments passed to the underlying writer</p>
+as it appears, and a partial file saved if there is a crash</p></td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
+          <td>
+                <code><span title="typing.Dict">Dict</span></code>
+          </td>
+          <td><p>named arguments passed to the underlying writer</p></td>
+          <td>
+                <code>{}</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
       <details class="quote">
         <summary>Source code in <code>fil/fil.py</code></summary>
         <div class="highlight"><table class="highlighttable"><tr>
-<td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
+<td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
@@ -389,7 +435,16 @@ as it appears, and a partial file saved if there is a crash</p>
 <span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span>
-<span class="normal">70</span></pre></div></td>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span></pre></div></td>
 <td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">write</span><span class="p">(</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">FileData</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">FilePath</span><span class="p">,</span>
@@ -397,18 +452,20 @@ as it appears, and a partial file saved if there is a crash</p>
     <span class="n">use_safer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Args:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Writes data to a file with a format based on the file's suffix.</span>
 
-<span class="sd">    data: JSON, or an iterator of JSON records, if the file is JSON Lines</span>
+<span class="sd">    Args:</span>
+<span class="sd">        data: JSON, or an iterator of JSON records, if the file is JSON Lines</span>
 
-<span class="sd">    path: the string or path to the file to read</span>
+<span class="sd">        path: the string or path to the file to read</span>
 
-<span class="sd">    use_safer: whether to use the safer module to avoid writing incomplete</span>
-<span class="sd">      files. The default, `None` means to use `safer` on all files *except*</span>
-<span class="sd">      for JSON Line files, where you want each line to be immediately written</span>
-<span class="sd">      as it appears, and a partial file saved if there is a crash</span>
+<span class="sd">        use_safer: whether to use the safer module to avoid writing incomplete</span>
+<span class="sd">          files. The default, `None` means to use `safer` on all files *except*</span>
+<span class="sd">          for JSON Line files, where you want each line to be immediately written</span>
+<span class="sd">          as it appears, and a partial file saved if there is a crash</span>
 
-<span class="sd">    kwargs: named arguments passed to the underlying writer</span>
+<span class="sd">        kwargs: named arguments passed to the underlying writer</span>
 <span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_get_class</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">use_safer</span><span class="o">=</span><span class="n">use_safer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
