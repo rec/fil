@@ -16,7 +16,7 @@ DATA = (
     [{'a': 1, 'b': 2, 'c': 3}, {'a': 9, 'b': 7, 'c': 9}, {}],
 )
 
-COMPRESS_SUFFIXES = [''] + list(fil.SUFFIX_TO_COMPRESSION)
+COMPRESS_SUFFIXES = [''] + list(fil.SUFFIX_TO_OPENER)
 PAIRS = itertools.product(DATA, fil.SUFFIX_TO_CLASS, COMPRESS_SUFFIXES)
 
 

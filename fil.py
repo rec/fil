@@ -44,8 +44,8 @@ def read(path: FilePath) -> FileData:
       path: the string or path to the file to read
     """
     p = Path(path)
-    cls, open = _get_class(p)
-    return cls.read(p, open=open)
+    cls, opener = _get_class_opener(p)
+    return cls.read(p, opener)
 
 
 def write(
@@ -69,8 +69,8 @@ def write(
     kwargs: named arguments passed to the underlying writer
     """
     p = Path(path)
-    cls, open = _get_class(p)
-    return cls.write(data, p, open=open, use_safer=use_safer, **kwargs)
+    cls, opener = _get_class_opener(p)
+    return cls.write(data, p, opener, use_safer=use_safer, **kwargs)
 
 
 class _Json:
@@ -78,17 +78,17 @@ class _Json:
     suffixes = '.json',
     use_safer = True
 
-    def read(self, p, open=open):
-        with open(p) as fp:
+    def read(self, p, opener):
+        with opener(p) as fp:
             return self._read(fp)
 
-    def write(self, data, p, *, open=open, use_safer=None, **kwargs):
+    def write(self, data, p, opener, *, use_safer=None, **kwargs):
         self._check_data(data)
-        fp = open(p, 'w')
-        if use_safer or use_safer is None and self.use_safer:
-            fp = safer.open(p, 'w')
 
-        with fp:
+        if use_safer is None:
+            use_safer = self.use_safer
+
+        with safer.open(p, 'w', enabled=use_safer, opener=opener) as fp:
             self._write(data, fp, **kwargs)
 
     def _check_data(self, data):
@@ -164,7 +164,7 @@ class _JsonLines(_Json):
     use_safer = False
     suffixes = '.jl', '.jsonl', '.jsonlines'
 
-    def read(self, p, open=open):
+    def read(self, p, opener=None):
         with open(p) as fp:
             for line in fp:
                 yield json.loads(line)
@@ -188,22 +188,53 @@ class _JsonLines(_Json):
 CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
 
-SUFFIX_TO_COMPRESSION = {
-    '.bz': bz2,
-    '.gz': gzip,
-    '.gzip': gzip,
+
+class _TextAdaptor:
+    def __init__(self, fp):
+        self._fp = fp
+
+    def __getattr__(self, k):
+        return getattr(self._fp, k)
+
+    def read(self, i=None) -> str:
+        return self._fp.read(i).decode()
+
+    def write(self, s):
+        return self._fp.write(s.encode())
+
+    def __iter__(self):
+        return (i.decode() for i in self._fp)
+
+    def __enter__(self):
+        return self._fp.__enter__()
+
+    def __exit__(self, *a):
+        return self._fp.__exit__(*a)
+
+
+class _Opener:
+    def __init__(self, opener):
+        self.opener = opener
+
+    def __call__(self, filename, mode='r'):
+        fp = self.opener.open(filename, mode + 'b')
+        return _TextAdaptor(fp)
+
+
+SUFFIX_TO_OPENER = {
+    '.bz': _Opener(bz2),
+    '.gz': _Opener(gzip),
+    '.gzip': _Opener(gzip),
 }
 
 
-def _get_class(p):
-    try:
-        _open = SUFFIX_TO_COMPRESSION[p.suffix].open
-    except KeyError:
-        _open = open
-    else:
+def _get_class_opener(p):
+    opener = SUFFIX_TO_OPENER.get(p.suffix, open)
+    if opener is not open:
         p = p.with_suffix('')
 
     try:
-        return SUFFIX_TO_CLASS[p.suffix], _open
+        cls = SUFFIX_TO_CLASS[p.suffix]
     except KeyError:
         raise ValueError('Do not understand file {p}')
+    return cls, opener
