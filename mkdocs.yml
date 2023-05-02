@@ -1,4 +1,4 @@
-site_name: '🏺: `fil`: Read/write JSON, TOML, ... files 🏺'
+site_name: '🏺: `fil`: Read/write JSON/TOML/Yaml/txt 🏺'
 
 theme:
   name: material

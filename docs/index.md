@@ -1,4 +1,4 @@
-# 🏺: `fil`: Read/write JSON, TOML, ... files 🏺
+# 🏺: `fil`: Read/write JSON/TOML/Yaml/txt 🏺
 
 ::: fil.read
 
