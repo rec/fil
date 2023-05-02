@@ -69,9 +69,9 @@ def write(
         path: the string or path to the file to read
 
         use_safer: whether to use the safer module to avoid writing incomplete
-          files. The default, `None` means to use `safer` on all files *except*
-          for JSON Line files, where you want each line to be immediately written
-          as it appears, and a partial file saved if there is a crash
+            files. The default, `None` means to use `safer` on all files *except*
+            for JSON Line files, where you want each line to be immediately written
+            as it appears, and a partial file saved if there is a crash
 
         kwargs: named arguments passed to the underlying writer
     """
