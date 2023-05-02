@@ -188,7 +188,7 @@ class _JsonLines(_Json):
 CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
 SUFFIX_TO_CLASS = {s: c for c in CLASSES for s in c.suffixes}
 
-SUFFIX_TO_MODULE = {
+SUFFIX_TO_COMPRESSION = {
     '.bz': bz2,
     '.gz': gzip,
     '.gzip': gzip,
@@ -197,7 +197,7 @@ SUFFIX_TO_MODULE = {
 
 def _get_class(p):
     try:
-        _open = SUFFIX_TO_MODULE[p.suffix].open
+        _open = SUFFIX_TO_COMPRESSION[p.suffix].open
     except KeyError:
         _open = open
     else:

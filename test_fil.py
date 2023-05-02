@@ -16,13 +16,14 @@ DATA = (
     [{'a': 1, 'b': 2, 'c': 3}, {'a': 9, 'b': 7, 'c': 9}, {}],
 )
 
-PAIRS = itertools.product(fil.SUFFIX_TO_CLASS, DATA)
+COMPRESS_SUFFIXES = [''] + list(fil.SUFFIX_TO_COMPRESSION)
+PAIRS = itertools.product(DATA, fil.SUFFIX_TO_CLASS, COMPRESS_SUFFIXES)
 
 
-@pytest.mark.parametrize('suffix, data', list(PAIRS))
+@pytest.mark.parametrize('data, suffix, compress', list(PAIRS))
 @tdir
-def test_fil(suffix, data):
-    file_name = 'data' + suffix
+def test_fil(data, suffix, compress):
+    file_name = 'data' + suffix + compress
     is_jl = 'j' in suffix and 'l' in suffix
 
     expect_error = (
