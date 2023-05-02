@@ -22,7 +22,6 @@ PAIRS = itertools.product(fil.SUFFIX_TO_CLASS, DATA)
 @pytest.mark.parametrize('suffix, data', list(PAIRS))
 @tdir
 def test_fil(suffix, data):
-
     file_name = 'data' + suffix
     is_jl = 'j' in suffix and 'l' in suffix
 
