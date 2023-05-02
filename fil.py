@@ -126,7 +126,7 @@ class _Txt(_Json):
 
     def _check_data(self, d):
         if not isinstance(d, str):
-            raise TypeError('.txt files only accept strings, not {type(data)}')
+            raise TypeError(f'.txt files only accept strings, not {type(d)}')
 
     def _read(self, p):
         return p.read()

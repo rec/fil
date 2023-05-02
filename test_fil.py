@@ -2,6 +2,7 @@ import fil
 import itertools
 import pytest
 import tdir
+import yaml
 
 DATA = (
     None,
@@ -14,6 +15,7 @@ DATA = (
     {'hello': 'world'},
     {'a': {'very': {'deep': {'one': 'two'}}}},
     [{'a': 1, 'b': 2, 'c': 3}, {'a': 9, 'b': 7, 'c': 9}, {}],
+    itertools,
 )
 
 PAIRS = itertools.product(fil.SUFFIX_TO_CLASS, DATA)
@@ -29,15 +31,21 @@ def test_fil(suffix, data):
         (suffix == '.txt' and not isinstance(data, str))
         or (suffix == '.toml' and not isinstance(data, dict))
         or (is_jl and not isinstance(data, list))
+        or (data is itertools)
     )
 
     if expect_error:
-        with pytest.raises(TypeError) as e:
+        with pytest.raises((TypeError, yaml.YAMLError)) as e:
             fil.write(data, file_name)
         msg = e.value.args[0]
         if is_jl:
             expected = 'JSON Line data must be iterable and not dict or str'
             assert msg == expected
+        elif data is itertools:
+            if isinstance(e.value, yaml.YAMLError):
+                assert msg == 'cannot represent an object'
+            else:
+                assert 'module' in msg
         else:
             assert 'files only accept' in msg
     else:
