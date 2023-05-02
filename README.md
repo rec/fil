@@ -1,5 +1,3 @@
-# 🏺 `fil`: Read or write JSON, text, TOML, Yaml and JSON Lines files 🏺
-
 ## Example 1: read a file
 
     d1 = fil.read('file.json')   # Any Json
@@ -22,4 +20,5 @@
     dicts = ({'key': i} for i in range(10))
     fil.write(dicts, 'file.jsonl')
 
-## [API Documentation](https://rec.github.io/fil#fil--api-documentation)
+
+### [API Documentation](https://rec.github.io/fil#fil--api-documentation)
