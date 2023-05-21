@@ -26,7 +26,7 @@
 
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 import json
 import safer
 
@@ -37,9 +37,10 @@ JSON = Union[Dict, List, None, bool, float, int, str]
 JSON_Lines = Iterator[JSON]
 FileData = Union[JSON, JSON_Lines]
 FilePath = Union[Path, str]
+_NONE = object()
 
 
-def read(path: FilePath) -> FileData:
+def read(path: FilePath, default: Any = _NONE) -> FileData:
     """
     Reads data from a file based on its suffix
 
@@ -48,9 +49,15 @@ def read(path: FilePath) -> FileData:
 
     Args:
       path: the string or path to the file to read
+      default: a default to return if there is any error in reading the file
     """
     p = Path(path)
-    return _get_class(p).read(p)
+    try:
+        return _get_class(p).read(p)
+    except Exception:
+        if default is _NONE:
+            raise
+        return default
 
 
 def write(

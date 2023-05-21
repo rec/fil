@@ -55,3 +55,7 @@ def test_fil(suffix, data):
             round_trip = list(round_trip)
 
         assert data == round_trip
+
+
+def test_default():
+    assert fil.read('non-existent.json', 'none') == 'none'
