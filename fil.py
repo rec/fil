@@ -27,7 +27,10 @@
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
-import json
+try:
+    import ujson as json
+except ImportError:
+    import json
 import safer
 
 __all__ = 'read', 'write', 'SUFFIX_TO_CLASS'
