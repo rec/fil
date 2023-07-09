@@ -7,8 +7,8 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-safer = "^4.6.1"
+python = ">=3.8"
+safer = "*"
 
 [tool.poetry.group.all.dependencies]
 pyyaml = "*"
