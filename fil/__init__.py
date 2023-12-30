@@ -24,26 +24,28 @@
     fil.write(dicts, 'file.jsonl')
 """
 
+import typing as t
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union
+
 try:
     import ujson as json
 except ImportError:
-    import json
+    import json  # type: ignore[no-redef]
+
 import safer
 
-__all__ = 'read', 'write', 'SUFFIX_TO_CLASS'
+__all__ = "read", "write", "SUFFIX_TO_CLASS"
 
 # JSON is the type used by JSON, TOML, or Yaml
-JSON = Union[Dict, List, None, bool, float, int, str]
-JSON_Lines = Iterator[JSON]
-FileData = Union[JSON, JSON_Lines]
-FilePath = Union[Path, str]
+JSON = t.Union[t.Dict, t.List, None, bool, float, int, str]
+JSON_Lines = t.Iterator[JSON]
+FileData = t.Union[JSON, JSON_Lines]
+FilePath = t.Union[Path, str]
 _NONE = object()
 
 
-def read(path: FilePath, default: Any = _NONE) -> FileData:
+def read(path: FilePath, default: t.Any = _NONE) -> FileData:
     """
     Reads data from a file based on its suffix
 
@@ -67,8 +69,8 @@ def write(
     data: FileData,
     path: FilePath,
     *,
-    use_safer: Optional[bool] = None,
-    **kwargs: Dict,
+    use_safer: t.Optional[bool] = None,
+    **kwargs: t.Dict,
 ) -> None:
     """
     Writes data to a file with a format based on the file's suffix.
@@ -90,8 +92,8 @@ def write(
 
 
 class _Json:
-    module_names = 'json',
-    suffixes = '.json',
+    module_names: t.Sequence[str] = ("json",)
+    suffixes: t.Sequence[str] = (".json",)
     use_safer = True
 
     def read(self, p, open=open):
@@ -100,9 +102,9 @@ class _Json:
 
     def write(self, data, p, *, open=open, use_safer=None, **kwargs):
         self._check_data(data)
-        fp = open(p, 'w')
+        fp = open(p, "w")
         if use_safer or use_safer is None and self.use_safer:
-            fp = safer.open(p, 'w')
+            fp = safer.open(p, "w")
 
         with fp:
             self._write(data, fp, **kwargs)
@@ -112,10 +114,10 @@ class _Json:
 
     def _import_error(self):
         name = self.module_names[0]
-        name = 'pyyaml' if name == 'yaml' else name
+        name = "pyyaml" if name == "yaml" else name
 
-        sfx = ', '.join(self.suffixes)
-        raise ImportError(f'Install module `{name}` to use {sfx} files')
+        sfx = ", ".join(self.suffixes)
+        raise ImportError(f"Install module `{name}` to use {sfx} files")
 
     @cached_property
     def _module(self):
@@ -140,12 +142,12 @@ class _Json:
 
 
 class _Txt(_Json):
-    suffixes = '.txt',
+    suffixes = (".txt",)
     use_safer = False
 
     def _check_data(self, d):
         if not isinstance(d, str):
-            raise TypeError(f'.txt files only accept strings, not {type(d)}')
+            raise TypeError(f".txt files only accept strings, not {type(d)}")
 
     def _read(self, p):
         return p.read()
@@ -155,17 +157,17 @@ class _Txt(_Json):
 
 
 class _Toml(_Json):
-    suffixes = '.toml',
-    module_names = 'tomlkit', 'tomllib'
+    suffixes = (".toml",)
+    module_names = "tomlkit", "tomllib"
 
     def _check_data(self, data):
         if not isinstance(data, dict):
-            raise TypeError(f'TOML files only accept dicts, not {type(data)}')
+            raise TypeError(f"TOML files only accept dicts, not {type(data)}")
 
 
 class _Yaml(_Json):
-    suffixes = '.yaml', '.yml'
-    module_names = 'yaml',
+    suffixes = ".yaml", ".yml"
+    module_names = ("yaml",)
 
     @cached_property
     def _read(self):
@@ -178,7 +180,7 @@ class _Yaml(_Json):
 
 class _JsonLines(_Json):
     use_safer = False
-    suffixes = '.jl', '.jsonl', '.jsonlines'
+    suffixes = ".jl", ".jsonl", ".jsonlines"
 
     def read(self, p, open=open):
         with open(p) as fp:
@@ -186,8 +188,8 @@ class _JsonLines(_Json):
                 yield json.loads(line)
 
     def _write(self, data, fp, **kwargs):
-        if kwargs.get('indent') is not None:
-            raise ValueError('indent= not allowed for JSON Lines')
+        if kwargs.get("indent") is not None:
+            raise ValueError("indent= not allowed for JSON Lines")
 
         for d in data:
             print(json.dumps(d), file=fp)
@@ -198,7 +200,7 @@ class _JsonLines(_Json):
                 return iter(d)
             except TypeError:
                 pass
-        raise TypeError('JSON Line data must be iterable and not dict or str')
+        raise TypeError("JSON Line data must be iterable and not dict or str")
 
 
 CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
@@ -209,4 +211,4 @@ def _get_class(p):
     try:
         return SUFFIX_TO_CLASS[p.suffix]
     except KeyError:
-        raise ValueError('Do not understand file {p}')
+        raise ValueError("Do not understand file {p}")
