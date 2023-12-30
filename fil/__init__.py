@@ -24,6 +24,7 @@
     fil.write(dicts, 'file.jsonl')
 """
 
+import os
 import typing as t
 from functools import cached_property
 from pathlib import Path
@@ -38,14 +39,12 @@ import safer
 __all__ = "read", "write", "SUFFIX_TO_CLASS"
 
 # JSON is the type used by JSON, TOML, or Yaml
-JSON = t.Union[t.Dict, t.List, None, bool, float, int, str]
-JSON_Lines = t.Iterator[JSON]
-FileData = t.Union[JSON, JSON_Lines]
-FilePath = t.Union[Path, str]
+JSON = t.Union[t.Dict[str, t.Any], t.List, None, bool, float, int, str]
+FilePath = t.Union[str, os.PathLike]
 _NONE = object()
 
 
-def read(path: FilePath, default: t.Any = _NONE) -> FileData:
+def read(path: FilePath, default: t.Any = _NONE) -> t.Union[JSON, t.Iterator[JSON]]:
     """
     Reads data from a file based on its suffix
 
@@ -66,11 +65,11 @@ def read(path: FilePath, default: t.Any = _NONE) -> FileData:
 
 
 def write(
-    data: FileData,
+    data: t.Union[JSON, t.Iterator[JSON]],
     path: FilePath,
     *,
     use_safer: t.Optional[bool] = None,
-    **kwargs: t.Dict,
+    **kwargs,
 ) -> None:
     """
     Writes data to a file with a format based on the file's suffix.
@@ -188,6 +187,9 @@ class _JsonLines(_Json):
                 yield json.loads(line)
 
     def _write(self, data, fp, **kwargs):
+        if isinstance(data, t.Mapping):
+            raise ValueError("JsonLines cannot write a single dict")
+
         if kwargs.get("indent") is not None:
             raise ValueError("indent= not allowed for JSON Lines")
 

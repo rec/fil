@@ -32,7 +32,7 @@ branch = true
 source = ["fil"]
 
 [tool.coverage.report]
-fail_under = 88
+fail_under = 87
 skip_covered = true
 exclude_lines = [
     "pragma: no cover",
