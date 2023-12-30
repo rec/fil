@@ -26,3 +26,17 @@ tomlkit = "*"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+branch = true
+source = ["fil"]
+
+[tool.coverage.report]
+fail_under = 88
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if False:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
