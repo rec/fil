@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8"
 safer = "*"
+types-ujson = "*"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
