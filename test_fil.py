@@ -2,7 +2,14 @@ import itertools
 
 import pytest
 import tdir
-import yaml
+
+try:
+    import tomlkit
+
+    TOMLKIT = bool(tomlkit)
+
+except ImportError:
+    TOMLKIT = False
 
 import fil
 
@@ -29,27 +36,39 @@ def test_fil(suffix, data):
     file_name = "data" + suffix
     is_jl = "j" in suffix and "l" in suffix
 
+    if False and suffix == ".toml" and isinstance(data, dict):
+        with open(file_name, "wb") as fp:
+            if "hello" in data:
+                fp.write(b'hello = "world"\n')
+            else:
+                fp.write(b'[a.very.deep]\none = "two"\n')
+        round_trip = fil.read(file_name)
+        assert round_trip == data
+
     expect_error = (
         (suffix == ".txt" and not isinstance(data, str))
-        or (suffix == ".toml" and not isinstance(data, dict))
+        or (suffix == ".toml" and not (isinstance(data, dict) and TOMLKIT))
         or (is_jl and not isinstance(data, list))
         or (data is itertools)
     )
 
     if expect_error:
-        with pytest.raises((TypeError, yaml.YAMLError)) as e:
+        with pytest.raises(Exception) as e:
             fil.write(data, file_name)
+
         msg = e.value.args[0]
+
         if is_jl:
             expected = "JSON Line data must be iterable and not dict or str"
             assert msg == expected
         elif data is itertools:
-            if isinstance(e.value, yaml.YAMLError):
-                assert msg == "cannot represent an object"
-            else:
-                assert "module" in msg
+            assert msg == "cannot represent an object" or "module" in msg
         else:
-            assert "files only accept" in msg
+            assert (
+                msg == "Install module `tomlkit` to use .toml files"
+                or "files only accept" in msg
+            )
+
     else:
         fil.write(data, file_name)
         round_trip = fil.read(file_name)

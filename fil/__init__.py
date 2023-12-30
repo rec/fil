@@ -96,17 +96,22 @@ class _Json:
     use_safer = True
 
     def read(self, p, open=open):
-        with open(p) as fp:
+        with open(p, "r" + self.mode) as fp:
             return self._read(fp)
 
     def write(self, data, p, *, open=open, use_safer=None, **kwargs):
         self._check_data(data)
-        fp = open(p, "w")
+        fp = open(p, "w" + self.mode)
+
         if use_safer or use_safer is None and self.use_safer:
-            fp = safer.open(p, "w")
+            fp = safer.open(p, "w" + self.mode)
 
         with fp:
             self._write(data, fp, **kwargs)
+
+    @property
+    def mode(self) -> str:
+        return ""
 
     def _check_data(self, data):
         pass
@@ -116,7 +121,7 @@ class _Json:
         name = "pyyaml" if name == "yaml" else name
 
         sfx = ", ".join(self.suffixes)
-        raise ImportError(f"Install module `{name}` to use {sfx} files")
+        raise ImportError(f"Install module `{name}` to use {sfx} files") from None
 
     @cached_property
     def _module(self):
@@ -142,6 +147,7 @@ class _Json:
 
 class _Txt(_Json):
     suffixes = (".txt",)
+    module_names = ()
     use_safer = False
 
     def _check_data(self, d):
@@ -157,11 +163,15 @@ class _Txt(_Json):
 
 class _Toml(_Json):
     suffixes = (".toml",)
-    module_names = "tomlkit", "tomllib"
+    module_names = "tomlkit", "tomllib", "tomli"
 
     def _check_data(self, data):
         if not isinstance(data, dict):
             raise TypeError(f"TOML files only accept dicts, not {type(data)}")
+
+    @property
+    def mode(self) -> str:
+        return (self._module == "tomllib") * "b"
 
 
 class _Yaml(_Json):
