@@ -16,9 +16,14 @@ pyyaml = "*"
 tomlkit = "*"
 
 [tool.poetry.group.dev.dependencies]
+black = "*"
+coverage = "*"
 flake8 = "*"
+isort = "*"
+mypy = "*"
 pytest = "*"
 pyyaml = "*"
+ruff = "*"
 tdir = "*"
 tomlkit = "*"
 
