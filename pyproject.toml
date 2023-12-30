@@ -9,11 +9,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8"
 safer = "*"
-coverage = "^7.3.2"
-
-[tool.poetry.group.all.dependencies]
-pyyaml = "*"
-tomlkit = "*"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
