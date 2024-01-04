@@ -5,6 +5,9 @@ description = "🏺 Read/write JSON/TOML/Yaml/txt 🏺"
 authors = ["Tom Ritchford <tom@swirly.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/rec/fil"
+homepage = "https://github.com/rec/fil"
+documentation = "https://rec.github.io/fil"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
