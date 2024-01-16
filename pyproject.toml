@@ -26,6 +26,8 @@ ruff = "*"
 tdir = "*"
 tomlkit = "*"
 
+
+[tool.ruff]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
