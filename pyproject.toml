@@ -28,16 +28,14 @@ Documentation = "https://rec.github.io/fil"
 
 [dependency-groups]
 dev = [
-    "black",
     "coverage",
-    "flake8",
-    "isort",
-    "mypy",
     "pytest",
+    "pyupgrade>=3.21.2",
     "pyyaml",
     "ruff",
     "tdir",
     "tomlkit",
+    "ty>=0.0.14",
 ]
 
 [tool.uv]
@@ -65,9 +63,4 @@ source = ["fil"]
 [tool.coverage.report]
 fail_under = 87
 skip_covered = true
-exclude_lines = [
-    "pragma: no cover",
-    "if False:",
-    "if __name__ == .__main__.:",
-    "raise NotImplementedError",
-]
+exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", "raise NotImplementedError"]
