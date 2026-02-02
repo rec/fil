@@ -54,8 +54,6 @@ line-length = 88
 [tool.ruff.format]
 quote-style = "single"
 
-[tool.mypy]
-
 [tool.coverage.run]
 branch = true
 source = ["fil"]
