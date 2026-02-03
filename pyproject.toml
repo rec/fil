@@ -1,6 +1,6 @@
 [project]
 name = "fil"
-version = "1.4.3"
+version = "1.5.0"
 description = "🏺 Read/write JSON/TOML/Yaml/txt 🏺"
 authors = [{ name = "Tom Ritchford", email = "tom@swirly.com" }]
 requires-python = ">=3.10"
