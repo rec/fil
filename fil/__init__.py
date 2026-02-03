@@ -32,11 +32,11 @@ from pathlib import Path
 try:
     import ujson as json
 except ImportError:
-    import json  # type: ignore[no-redef]
+    import json
 
 import safer
 
-__all__ = "read", "write", "SUFFIX_TO_CLASS"
+__all__ = 'read', 'write', 'SUFFIX_TO_CLASS'
 
 # JSON is the type used by JSON, TOML, or Yaml
 JSON = t.Union[t.Dict[str, t.Any], t.List, None, bool, float, int, str]
@@ -91,37 +91,37 @@ def write(
 
 
 class _Json:
-    module_names: t.Sequence[str] = ("json",)
-    suffixes: t.Sequence[str] = (".json",)
+    module_names: t.Sequence[str] = ('json',)
+    suffixes: t.Sequence[str] = ('.json',)
     use_safer = True
 
     def read(self, p, open=open):
-        with open(p, "r" + self.mode) as fp:
+        with open(p, 'r' + self.mode) as fp:
             return self._read(fp)
 
     def write(self, data, p, *, open=open, use_safer=None, **kwargs):
         self._check_data(data)
-        fp = open(p, "w" + self.mode)
+        fp = open(p, 'w' + self.mode)
 
         if use_safer or use_safer is None and self.use_safer:
-            fp = safer.open(p, "w" + self.mode)
+            fp = safer.open(p, 'w' + self.mode)
 
         with fp:
             self._write(data, fp, **kwargs)
 
     @property
     def mode(self) -> str:
-        return ""
+        return ''
 
-    def _check_data(self, data):
+    def _check_data(self, data: t.Any):
         pass
 
     def _import_error(self):
         name = self.module_names[0]
-        name = "pyyaml" if name == "yaml" else name
+        name = 'pyyaml' if name == 'yaml' else name
 
-        sfx = ", ".join(self.suffixes)
-        raise ImportError(f"Install module `{name}` to use {sfx} files") from None
+        sfx = ', '.join(self.suffixes)
+        raise ImportError(f'Install module `{name}` to use {sfx} files') from None
 
     @cached_property
     def _module(self):
@@ -146,13 +146,13 @@ class _Json:
 
 
 class _Txt(_Json):
-    suffixes = (".txt",)
+    suffixes = ('.txt',)
     module_names = ()
     use_safer = False
 
-    def _check_data(self, d):
-        if not isinstance(d, str):
-            raise TypeError(f".txt files only accept strings, not {type(d)}")
+    def _check_data(self, data: t.Any):
+        if not isinstance(data, str):
+            raise TypeError(f'.txt files only accept strings, not {type(data)}')
 
     def _read(self, p):
         return p.read()
@@ -162,21 +162,21 @@ class _Txt(_Json):
 
 
 class _Toml(_Json):
-    suffixes = (".toml",)
-    module_names = "tomlkit", "tomllib", "tomli"
+    suffixes = ('.toml',)
+    module_names = 'tomlkit', 'tomllib', 'tomli'
 
     def _check_data(self, data):
         if not isinstance(data, dict):
-            raise TypeError(f"TOML files only accept dicts, not {type(data)}")
+            raise TypeError(f'TOML files only accept dicts, not {type(data)}')
 
     @property
     def mode(self) -> str:
-        return (self._module == "tomllib") * "b"
+        return (self._module == 'tomllib') * 'b'
 
 
 class _Yaml(_Json):
-    suffixes = ".yaml", ".yml"
-    module_names = ("yaml",)
+    suffixes = '.yaml', '.yml'
+    module_names = ('yaml',)
 
     @cached_property
     def _read(self):
@@ -189,7 +189,7 @@ class _Yaml(_Json):
 
 class _JsonLines(_Json):
     use_safer = False
-    suffixes = ".jl", ".jsonl", ".jsonlines"
+    suffixes = '.jl', '.jsonl', '.jsonlines'
 
     def read(self, p, open=open):
         with open(p) as fp:
@@ -198,21 +198,21 @@ class _JsonLines(_Json):
 
     def _write(self, data, fp, **kwargs):
         if isinstance(data, t.Mapping):
-            raise ValueError("JsonLines cannot write a single dict")
+            raise ValueError('JsonLines cannot write a single dict')
 
-        if kwargs.get("indent") is not None:
-            raise ValueError("indent= not allowed for JSON Lines")
+        if kwargs.get('indent') is not None:
+            raise ValueError('indent= not allowed for JSON Lines')
 
         for d in data:
             print(json.dumps(d), file=fp)
 
-    def _check_data(self, d):
-        if not isinstance(d, (dict, str)):
+    def _check_data(self, data: t.Any):
+        if not isinstance(data, (dict, str)):
             try:
-                return iter(d)
+                return iter(data)
             except TypeError:
                 pass
-        raise TypeError("JSON Line data must be iterable and not dict or str")
+        raise TypeError('JSON Line data must be iterable and not dict or str')
 
 
 CLASSES = _Json(), _JsonLines(), _Toml(), _Txt(), _Yaml()
@@ -223,4 +223,4 @@ def _get_class(p):
     try:
         return SUFFIX_TO_CLASS[p.suffix]
     except KeyError:
-        raise ValueError("Do not understand file {p}")
+        raise ValueError('Do not understand file {p}') from None
